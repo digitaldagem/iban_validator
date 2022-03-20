@@ -1,0 +1,7 @@
+version: "3.9"
+services:
+  iban_validator:
+    build: .
+    container_name: pfc
+    ports:
+      - '8080:8080'
