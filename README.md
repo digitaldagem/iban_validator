@@ -2,10 +2,10 @@
 This repository holds the source code for a java spring-boot web-service that validates an 
 International Bank Account Number (IBAN).  
 
-It's `validateIban(String iban)` checks to see:
+It's `validateIban(String iban)` method checks to see:
 * if an IBAN has a valid country code 
 * if an IBAN has a valid length when it has a valid country code 
-* if the modulo operation on the IBAN, in a piece-wise manner (9 pieces at a time) is equal to 
+* if the modulo operation on the IBAN, in a piece-wise manner (9 pieces at a time), is equal to 
   one
 
 ### When running the web-service locally
