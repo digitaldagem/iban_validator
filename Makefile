@@ -1,8 +1,12 @@
-JFLAGS = -g
-JC = javac
-.SUFFIXES: .java .class
-.java.class: $(JC) $(JFLAGS) $*.java
-CLASSES = IbanValidatorService.java IbanValidatorController.java IbanValidatorApplication.java
-default: classes
-classes: $(CLASSES:.java=.class)
-clean: $(RM) *.class
+DOCKER_IMAGES = $(shell docker images -q iban_validator-webapp)
+
+up:
+	docker-compose up --build --remove-orphans
+
+down:
+ifneq ($(strip $(DOCKER_IMAGES)),)
+	docker-compose down -v --remove-orphans
+	docker rmi $(DOCKER_IMAGES)
+endif
+
+.PHONY: up down
