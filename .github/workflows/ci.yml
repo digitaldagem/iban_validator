@@ -38,11 +38,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      - name: Build and Start Services
+      - name: Build and Start Service
         run: make up
 
       - name: Run Tests
-        run: make test
+        run: mvn test
 
-      - name: Stop Services and Remove Images
-        run: make down
+      - name: Stop Service
+        run: docker-compose down -v --remove-orphans
+
+      - name: Remove Image
+        run: docker rmi iban_validator-webapp
