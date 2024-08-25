@@ -9,4 +9,7 @@ ifneq ($(strip $(DOCKER_IMAGES)),)
 	docker rmi $(DOCKER_IMAGES)
 endif
 
-.PHONY: up down
+tests:
+	mvn test
+
+.PHONY: up down test

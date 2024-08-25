@@ -42,7 +42,7 @@ jobs:
         run: make up
 
       - name: Run Tests
-        run: mvn test
+        run: make test
 
       - name: Stop Services and Remove Images
         run: make down
