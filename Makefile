@@ -1,7 +1,7 @@
 DOCKER_IMAGES = $(shell docker images -q iban_validator-webapp)
 
 up:
-	docker-compose up --build --remove-orphans
+	docker-compose up -d --build --remove-orphans
 
 down:
 ifneq ($(strip $(DOCKER_IMAGES)),)
