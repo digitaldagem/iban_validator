@@ -4,6 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class IbanValidatorService {
@@ -17,8 +19,7 @@ public class IbanValidatorService {
             "TL-23", "TN-24", "TR-26", "UA-29", "AE-23", "GB-22", "VG-24", "DZ-26", "AO-25", "BJ-28", "BF-28", "BI-16", "CM-27",
             "CV-25", "CF-27", "TD-27", "KM-27", "CG-27", "DJ-27", "GQ-27", "GA-27", "GW-25", "HN-28", "IR-26", "CI-28", "MG-27",
             "ML-28", "MA-28", "MZ-25", "NI-32", "NE-28", "SN-28", "TG-28");
-    private final List<String> alphabet = List.of("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
-            "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+
     private boolean ibanCountryCodeCheck;
     private boolean ibanLengthCheck;
 
@@ -39,19 +40,25 @@ public class IbanValidatorService {
     }
 
     private void checkIbanCountryCodeAndLength(String iban) {
+        String countryCode = iban.substring(0, 2);
+        ibanCountryCodeCheck = false;
+        ibanLengthCheck = false;
+
         for (String countryCodeAndLength : countryCodesAndLength) {
-            if (iban.substring(0, 2).equals(countryCodeAndLength.substring(0, 2))) {
+            String validCountryCode = countryCodeAndLength.substring(0, 2);
+            int expectedLength = Integer.parseInt(countryCodeAndLength.substring(3));
+
+            if (countryCode.equals(validCountryCode)) {
                 ibanCountryCodeCheck = true;
-                if (iban.length() == Integer.parseInt(countryCodeAndLength.substring(3))) {
-                    ibanLengthCheck = true;
-                }
+                ibanLengthCheck = iban.length() == expectedLength;
+                break;  // Stop once a valid country code is found and length is checked
             }
         }
     }
 
     private boolean checkForModulusOfOne(String iban) {
         String convertedIban = convertAllAlphaCharactersToNumericCharacters(
-                iban.substring(4).toUpperCase() + iban.substring(0,4).toUpperCase());
+                iban.substring(4).toUpperCase() + iban.substring(0, 4).toUpperCase());
         int modulus;
         while (true) {
             if (convertedIban.length() > 9) {
@@ -66,9 +73,16 @@ public class IbanValidatorService {
     }
 
     private String convertAllAlphaCharactersToNumericCharacters(String iban) {
-        for (int i = 0; i < alphabet.size(); i++) {
-            iban = iban.replace(alphabet.get(i), String.valueOf(10 + i));
+        Pattern pattern = Pattern.compile("[A-Z]");
+        Matcher matcher = pattern.matcher(iban);
+        StringBuilder result = new StringBuilder();
+
+        while (matcher.find()) {
+            String replacement = String.valueOf(matcher.group().charAt(0) - 'A' + 10);
+            matcher.appendReplacement(result, replacement);
         }
-        return iban;
+        matcher.appendTail(result);
+
+        return result.toString();
     }
 }

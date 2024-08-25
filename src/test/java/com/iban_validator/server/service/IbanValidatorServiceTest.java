@@ -5,17 +5,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class IbanValidatorServiceTest {
 
     static IbanValidatorService ibanValidatorService;
-    String iban;
     ResponseEntity<?> responseEntity;
 
     @BeforeEach
@@ -26,37 +25,35 @@ class IbanValidatorServiceTest {
     @Test
     void checkIban_withListOfValidIbansFromATextFile_returnsOKforEach() throws IOException {
         // given
-        File file = new File("src/test/resources/list_of_valid_IBANs.txt");
-        BufferedReader br
-                = new BufferedReader(new FileReader(file));
-        while ((iban = br.readLine()) != null) {
+        List<String> ibans = readLinesFromFile("src/test/resources/list_of_valid_IBANs.txt");
+
+        for (String iban : ibans) {
             // when
             responseEntity = ibanValidatorService.validateIban(iban);
 
             // then
-            assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+            assertEquals(HttpStatus.OK, responseEntity.getStatusCode(), () -> "Failed for IBAN: " + iban);
         }
     }
 
     @Test
     void checkIban_withListOfInvalidIbansFromATextFile_returnsBAD_REQUESTforEach() throws IOException {
         // given
-        File file = new File("src/test/resources/list_of_invalid_IBANs.txt");
-        BufferedReader br
-                = new BufferedReader(new FileReader(file));
-        while ((iban = br.readLine()) != null) {
+        List<String> ibans = readLinesFromFile("src/test/resources/list_of_invalid_IBANs.txt");
+
+        for (String iban : ibans) {
             // when
             responseEntity = ibanValidatorService.validateIban(iban);
 
             // then
-            assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+            assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode(), () -> "Failed for IBAN: " + iban);
         }
     }
 
     @Test
     void checkIban_withAnInvalidCountryCode_returnsBAD_REQUEST() {
         // given
-        iban = "ZE7280000810340009783242";
+        String iban = "ZE7280000810340009783242";
 
         // when
         responseEntity = ibanValidatorService.validateIban(iban);
@@ -70,7 +67,7 @@ class IbanValidatorServiceTest {
     @Test
     void checkIban_withTooLongALength_returnsBAD_REQUEST() {
         // given
-        iban = "SE72800008103400097832422";
+        String iban = "SE72800008103400097832422";
 
         // when
         responseEntity = ibanValidatorService.validateIban(iban);
@@ -84,7 +81,7 @@ class IbanValidatorServiceTest {
     @Test
     void checkIban_withACheckSumNotHavingAModulusOfOne_returnsBAD_REQUEST() {
         // given
-        iban = "SE7280700810340009783242";
+        String iban = "SE7280700810340009783242";
 
         // when
         responseEntity = ibanValidatorService.validateIban(iban);
@@ -93,5 +90,10 @@ class IbanValidatorServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
         assertEquals(iban + "'s checkSum does not have a modulus of 1.",
                 responseEntity.getBody());
+    }
+
+    // Helper method to read lines from a file
+    private List<String> readLinesFromFile(String filePath) throws IOException {
+        return Files.readAllLines(Path.of(filePath));
     }
 }
