@@ -48,4 +48,4 @@ jobs:
         run: docker-compose down -v --remove-orphans
 
       - name: Remove Image
-        run: docker rmi iban_validator-webapp
+        run: docker rmi iban_validator_webapp_1
